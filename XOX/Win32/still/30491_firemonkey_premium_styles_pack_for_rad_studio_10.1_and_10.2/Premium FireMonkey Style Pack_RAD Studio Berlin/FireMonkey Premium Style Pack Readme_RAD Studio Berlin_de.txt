@@ -1,0 +1,10 @@
+﻿In diesem Readme werden die Schritte zum Hinzufügen von benutzerdefinierten Stilen zu geräteübergreifenden Anwendungen mit Delphi, C++Builder und RAD Studio 10.1 Berlin erläutert. 
+
+1. Wählen Sie die Master-Ansicht aus, und fügen Sie Ihrem Formular eine TStyleBook-Komponente hinzu.
+
+2. Wählen Sie in der Master-Ansicht aus dem Dropdown-Menü in der Symbolleiste einen Master-Stil aus, und laden Sie dann den zugehörigen Premiumstil aus dem Stilpaket. Wenn Sie beispielsweise "Android" als Master-Stil auswählen, laden Sie die Datei "AndroidCoralCrystal.style" in das StyleBook in der Master-Ansicht und weisen sie zu. Bei benutzerdefinierten Stilen muss jede Ansicht, einschließlich der Master-Ansicht, über einen Stil verfügen.
+
+3. Wechseln Sie zu jeder erstellten Ansicht, wählen Sie in dieser Ansicht die Komponente TStyleBook aus, und laden Sie den zu dieser Plattform gehörenden benutzerdefinierten Stil (Windows-Stil für die Ansicht "Windows-Desktop", Android-Stil für die Ansicht "Android", Mac-Stil für die Ansicht "OS X-Desktop", iOS-Stil für die Ansichten "iPad" und "iPhone"). Hinweis: Wenn Sie für iPad und iPhone unterschiedliche Ansichten verwenden, müssen Sie für jede Ansicht denselben iOS-Stil laden.
+
+4. Wenn Ihre Anwendung aus mehreren Formularen besteht, können Sie in jeder Ansicht TStyleBook.UseStyleManager auf True setzen, um zur Laufzeit dieselben benutzerdefinierten Stile für alle anderen Formulare zu verwenden. Wenn TStyleBook.UseStyleManager auf True gesetzt ist, dann überschreiben die benutzerdefinierten Stile die Systemstile in allen anderen Formularen (Form2, Form3 usw.), die Teil der Anwendung für diese Plattform sind. Wenn TStyleBook.UseStyleManager auf False gesetzt ist, dann verwenden die neuen Formulare (Form2, Form3 usw.) den Standardplattformstil, und für neue Anpassungen müssen Sie der Master-Ansicht von Form2 TStyleBook hinzufügen und jeden benutzerdefinierten Stil erneut für alle erstellten Ansichten der weiteren Formulare laden, die Teil der Anwendung sind.
+

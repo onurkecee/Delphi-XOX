@@ -1,0 +1,6 @@
+﻿Die VCL-Stildateien "Coral", "Diamond", "Emerald", "Sterling", "Jet", "Radiant", "Vapor", "Copper" und "Copper Dark" unterliegen dem Copyright (c) 2013 - 2016 von Embarcadero Technologies, Inc. Alle Rechte vorbehalten.
+
+Die VCL-Stile "Coral", "Diamond", "Emerald", "Sterling", "Jet", "Radiant", "Vapor", "Copper" und "Copper Dark" sind von Embarcadero Technologies, Inc. nur für die Verwendung mit VCL-Anwendungen, die in Delphi 10.1 Berlin, C++Builder 10.1 Berlin und RAD Studio 10.1 Berlin ("Embarcadero-Produkte") erstellt wurden, lizenziert. Diese zusätzlichen Bedingungen ergänzen die Bestimmungen des Softwarelizenz- und Supportvertrags zu Embarcadero-Produkten. Sie dürfen die VCL-Stildateien "Coral", "Diamond", "Emerald", "Sterling", "Jet", "Radiant", "Vapor", "Copper" und "Copper Dark" ausschließlich als Bestandteil der Anwendungen, die Sie erstellen, verwenden und weitergeben. Sie sind nicht berechtigt, den Quellcode der Stildateien oder einzelne grafische Elemente Ihren Endbenutzern zugänglich zu machen. Sie dürfen eigenständige "Coral"-, "Diamond"-, "Emerald"-, "Sterling"-, "Jet"-, "Radiant"-, "Vapor"-, "Copper"- und "Copper Dark"-Stildateien (weder in unveränderter noch veränderter Form) nicht weiterverkaufen oder anderweitig weitergeben oder zugänglich machen. 
+Einige Stile enthalten Originaldesignelemente von MediaLoot.  
+
+

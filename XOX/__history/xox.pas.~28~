@@ -1,0 +1,307 @@
+unit xox;
+
+interface
+
+uses
+  System.SysUtils, System.Types, System.UITypes, System.Classes,
+  System.Variants,
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.StdCtrls,
+  FMX.Controls.Presentation, FMX.Layouts, System.Character, System.Math;
+
+type
+  TForm1 = class(TForm)
+    Layout1: TLayout;
+    GridLayout1: TGridLayout;
+    Button1: TButton;
+    Button2: TButton;
+    Button3: TButton;
+    Button4: TButton;
+    Button5: TButton;
+    Button6: TButton;
+    Button7: TButton;
+    Button8: TButton;
+    Button9: TButton;
+    Layout2: TLayout;
+    GridLayout2: TGridLayout;
+    ButtonBack: TButton;
+    ButtonReset: TButton;
+    ButtonNext: TButton;
+    Layout3: TLayout;
+    Label1: TLabel;
+    LabelScoreX: TLabel;
+    Layout4: TLayout;
+    Label2: TLabel;
+    LabelScoreDrawn: TLabel;
+    Layout5: TLayout;
+    Label3: TLabel;
+    LabelScoreO: TLabel;
+    StyleBook1: TStyleBook;
+    procedure ButtonNextClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure ButtonBackClick(Sender: TObject);
+    procedure ButtonResetClick(Sender: TObject);
+    procedure GridLayout1Paint(Sender: TObject; Canvas: TCanvas;
+      const [Ref] ARect: TRectF);
+  private
+    { Private declarations }
+    function GetTask(const aValue: integer): TButton;
+  public
+    { Public declarations }
+    P1, P2: TPointF; // Göster XXX,OOO
+    property Tast[const aValue: integer]: TButton read GetTask;
+    procedure ClearTast;
+    procedure BackTast;
+    function GameEnd: Boolean;
+    procedure CheckWin;
+    function TrainForced(var N: string; M: String): Boolean;
+    // Zormala kuvvetini belirle.
+  end;
+
+var
+  Form1: TForm1;
+
+implementation
+
+{$R *.fmx}
+
+Uses FMX.Styles.Objects;
+
+Type
+  col = Record
+    A, B, C: integer;
+  End;
+
+const
+  Play: Array [0 .. 1] of string = ('O', 'X');
+
+  Map: Array [1 .. 8] of col = ((A: 1; B: 2; C: 3), // Oyun karakteri O=O, X=I;
+    (A: 4; B: 5; C: 6), (A: 7; B: 8; C: 9), (A: 1; B: 4; C: 7), // Yarmak
+    (A: 2; B: 5; C: 8), (A: 3; B: 6; C: 9), (A: 1; B: 5; C: 9), (A: 3;
+    B: 5; C: 7));
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+  if GameEnd then
+    exit;
+
+  if Tast[TButton(Sender).TabOrder + 1].Tag > 0 then
+    exit; // Düðme yerleþti.
+
+  GridLayout1.Tag := GridLayout1.Tag + 1; // Arttýr
+  Tast[TButton(Sender).TabOrder + 1].Text := Play[GridLayout1.Tag Mod 2];
+  // Mevcut oyuncuyu göster
+  Tast[TButton(Sender).TabOrder + 1].Tag := GridLayout1.Tag;
+  // geri kontrol için dizin numarasýný hatýrla
+  CheckWin;
+end;
+
+procedure TForm1.ButtonBackClick(Sender: TObject);
+begin
+  BackTast;
+end;
+
+procedure TForm1.BackTast;
+var
+  P, I: integer;
+begin
+  P := GridLayout1.Tag; // P sayýlarýný unutma
+  if P < 1 then
+    exit; // iþimiz bitti burdan çýk
+
+  for I := 1 to 9 do
+    With Tast[I] do
+    begin
+      if Tag <> P then
+        Continue; // tag = 0'a eþit deðilse devam
+      Text := Space; // 1'den 9'a kadar booþ deðil
+      Tag := 0;
+      Break; // son ver
+    end;
+
+  P := P - 1;
+  TagString := ''; // Kazanan farketmez
+  GridLayout1.Tag := P; // Beraberlik sayýsýný ayarlamak
+  CheckWin;
+
+end;
+
+procedure TForm1.ButtonNextClick(Sender: TObject);
+var
+  I, K: integer;
+  A: Array of Integer;
+begin
+  if GameEnd then
+    exit;
+
+  if GridLayout1.Tag > 8 then // Dikkat sadece 9 varyant var
+    exit;
+
+  GridLayout1.Tag := GridLayout1.Tag + 1; // Öðe sayýsýný arttýr.
+  for I := 1 to 9 do
+  begin
+    if Tast[I].Tag = 0 then // Serbestlik var mý ?
+    begin
+      // SetLength();
+      SetLength(A, length(A) + 1); // Listeyi geniþlet
+      A[High(A)] := I; // pozisyonu farket
+    end;
+  end;
+
+  K := A[Random(High(A) + 1)]; // Serbest seçim bölgesinden rastgele alan seç
+
+  // Ben kazanabilirim
+  if Not TrainForced(K, Play[GridLayout1.Tag mod 2]) then
+    TrainForced(K, Play[(GridLayout1.Tag + 1) mod 2]);
+
+  Tast[K].Text := Play[GridLayout1.Tag Mod 2]; // Oyuncu kazýsýný göster
+  Tast[K].Tag := GridLayout1.Tag;
+  // index numarasýný iþaretle, iþgal edilen seçili kazanan olarak iþaretle
+  CheckWin;
+end;
+
+procedure TForm1.ButtonResetClick(Sender: TObject);
+begin
+  LabelScoreX.Tag := 0;
+  LabelScoreO.Tag := 0;
+  LabelScoreDrawn.Tag := -1;
+  TagString := '?';
+  GameEnd;
+end;
+
+procedure TForm1.CheckWin;
+var
+  S: string;
+  W: Boolean;
+  I: integer;
+begin
+  S := Play[GridLayout1.Tag mod 2]; // hsngi oyuncu harekete geçti ?
+  W := false;
+  P1 := TPointF.Zero; // Herþey baþlangýçta
+  P2 := TPointF.Zero;
+
+  for I := 1 to 8 do
+    if (Tast[Map[I].A].Text = S) And (Tast[Map[I].B].Text = S) and
+      (Tast[Map[I].C].Text = S) then
+    begin // Bul XXX, OOO
+      W := true;
+      P1 := Tast[Map[I].A].BoundsRect.CenterPoint; // Pozisyon merkezi baþlangýç
+      P2 := Tast[Map[I].C].BoundsRect.CenterPoint; // Pozisyon merkezi bitiþ
+    end;
+
+  if W then
+    TagString := S // Oyuncu Kazanýr.
+  else if GridLayout1.Tag = 9 then
+    TagString := '?'; // beraberlik
+  GridLayout1.Repaint;
+end;
+
+procedure TForm1.ClearTast;
+var
+  I: integer;
+begin
+  TagString := ''; // Kazananý hatýrla aksi halde burasý boþ.
+  GridLayout1.Tag := 0; // taþ sayýsýný 0 olarak ayarla
+
+  for I := 0 to GridLayout1.ChildrenCount - 1 do
+    With Tast[I + 1] do
+    begin
+      Text := '';
+      /// Girme, inttostr(I + 1); // sadece sayýlarý test etmek için.
+      Tag := 0; // alan boþ
+      TabOrder := I; // Onclick için tanýmla
+      OnClick := Button1Click; // Baðlantý olmasý gerekmez.
+
+    end;
+  CheckWin; // Güncelleme olarak.
+
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+  RandSeed := 10;
+  ClearTast;
+end;
+
+function TForm1.GameEnd: Boolean;
+begin
+  Result := TagString <> ''; // TagString'de birþey doðruysa
+
+  if Result then
+  begin
+
+    // Kazanan Puanlarý Artttýr
+    if TagString = 'O' then
+      With LabelScoreO do
+        Tag := Tag + 1;
+    if TagString = '?' then
+      With LabelScoreDrawn do
+        Tag := Tag + 1;
+    if TagString = 'X' then
+      With LabelScoreX do
+        Tag := Tag + 1;
+
+    // Puanlarý güncelleþtir ve göster
+    With LabelScoreO do
+      Text := Tag.ToString();
+    With LabelScoreDrawn do
+      Text := Tag.ToString();
+    With LabelScoreX do
+      Text := Tag.ToString();
+
+    ClearTast; // Sonunda ekran silinmelidir.
+  end;
+
+end;
+
+function TForm1.GetTask(const aValue: integer): TButton;
+begin
+  Result := TButton(GridLayout1.Children[aValue - 1]); // Çoðalt
+end;
+
+procedure TForm1.GridLayout1Paint(Sender: TObject; Canvas: TCanvas;
+  const [Ref] ARect: TRectF);
+var
+  C: TAlphaColor;
+  S: TStrokeBrush;
+  N: TCanvasSaveState;
+begin
+  if (P1 - P2).length > 1 then // Sadece tespit edilenler belirtiliyorsa
+  begin
+    C := TButtonStyleTextObject(Button1.FindStyleResource('text')).NormalColor;
+    // C := TAlphaColors.Black;
+    S := TStrokeBrush.Create(TBrushKind.Solid, C);
+    S.Thickness := 6; // Kalýn çizgi
+    N := Canvas.SaveState; // güvenli
+    Canvas.Stroke.Assign(S); // Tekrar ele al
+    Canvas.DrawLine(P1, P2, 0.5); // çizgi tamamen kapatýlmamalýdýr.
+    Canvas.RestoreState(N); // geri kesme
+  end;
+
+end;
+
+function TForm1.TrainForced(var N: string; M: String): Boolean;
+var
+  F, I: integer;
+  G: string;
+begin
+  F := 0;
+  for I := 1 to 8 do // Sadece 8 tane varsa
+    if F = 0 then
+    begin
+      G := Tast[Map[I].A].Text + Tast[Map[I].B].Text + Tast[Map[I].C].Text;
+      if G = M + M + Space then // C'yi boþ bir konum olarak geçir.
+        F := Map[I].C;
+      if G = M + Space + M then // A'yi boþ bir konum olarak geçir.
+        F := Map[I].A;
+      if G = Space + M + M then // B'yi boþ bir konum olarak geçir.
+        F := Map[I].B;
+    end;
+
+  Result := F > 0; // Bulunan
+  if Result then // Aksi halde bulunuyorsa yeni posizyonu iade et
+    N := F;
+
+end;
+
+end.
